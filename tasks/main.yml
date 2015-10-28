@@ -1,0 +1,39 @@
+---
+- name: Ensure vagrant project directory exists
+  local_action:
+    module: file
+    path: "{{ vagrant_project_dir }}"
+    state: directory
+
+- name: Process Vagrantfile template
+  local_action:
+    module: template
+    src: Vagrantfile.j2
+    dest: "{{ vagrant_project_dir }}/Vagrantfile"
+
+- name: Ensure vagrant vm is up
+  local_action:
+    module: shell vagrant up
+    chdir: "{{ vagrant_project_dir }}"
+  register: vagrant_up_out
+
+- name: Debug vagrant_up_out.stdout_lines
+  local_action:
+    module: debug
+    var: vagrant_up_out.stdout_lines
+  tags: debug
+
+- name: Debug vagrant_up_out.stderr
+  local_action:
+    module: debug
+    var: vagrant_up_out.stderr
+  tags: debug
+
+- name: Set SSH key to use when connecting to the new host
+  local_action:
+    module: set_fact
+    ansible_ssh_user: vagrant
+    ansible_ssh_private_key_file: "{{ vagrant_project_dir }}/.vagrant/machines/default/virtualbox/private_key"
+
+- name: Gather facts
+  setup:
