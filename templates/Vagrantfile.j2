@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.name = "{{ inventory_hostname }}"
     vb.cpus = 1
-    vb.memory = 1024
+    vb.memory = {{ vagrant_vm_memory_mb }}
   end
 
   config.vm.provision :shell, :inline => "sudo apt-get -y update"
