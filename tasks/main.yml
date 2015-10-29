@@ -4,29 +4,34 @@
     module: file
     path: "{{ vagrant_project_dir }}"
     state: directory
+  sudo: no
 
 - name: Process Vagrantfile template
   local_action:
     module: template
     src: Vagrantfile.j2
     dest: "{{ vagrant_project_dir }}/Vagrantfile"
+  sudo: no
 
 - name: Ensure vagrant vm is up
   local_action:
     module: shell vagrant up
     chdir: "{{ vagrant_project_dir }}"
+  sudo: no
   register: vagrant_up_out
 
 - name: Debug vagrant_up_out.stdout_lines
   local_action:
     module: debug
     var: vagrant_up_out.stdout_lines
+  sudo: no
   tags: debug
 
 - name: Debug vagrant_up_out.stderr
   local_action:
     module: debug
     var: vagrant_up_out.stderr
+  sudo: no
   tags: debug
 
 - name: Set SSH key to use when connecting to the new host
@@ -34,6 +39,7 @@
     module: set_fact
     ansible_ssh_user: vagrant
     ansible_ssh_private_key_file: "{{ vagrant_project_dir }}/.vagrant/machines/default/virtualbox/private_key"
+  sudo: no
 
 - name: Gather facts
   setup:
