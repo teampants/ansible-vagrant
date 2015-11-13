@@ -3,3 +3,5 @@ vagrant_projects_root_dir: "{{ playbook_dir }}/vagrant"
 vagrant_project_dir: "{{ vagrant_projects_root_dir }}/{{ inventory_hostname }}"
 vagrant_private_network_ip: "{{ inventory_hostname }}"
 vagrant_vm_memory_mb: 1024
+
+vagrant_action: "up"

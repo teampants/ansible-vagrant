@@ -18,21 +18,8 @@
     module: shell vagrant up
     chdir: "{{ vagrant_project_dir }}"
   sudo: no
-  register: vagrant_up_out
-
-- name: Debug vagrant_up_out.stdout_lines
-  local_action:
-    module: debug
-    var: vagrant_up_out.stdout_lines
-  sudo: no
-  tags: debug
-
-- name: Debug vagrant_up_out.stderr
-  local_action:
-    module: debug
-    var: vagrant_up_out.stderr
-  sudo: no
-  tags: debug
+  register: vagrant_action_out
+  when: vagrant_action == "up"
 
 - name: Set SSH key to use when connecting to the new host
   local_action:
@@ -40,6 +27,24 @@
     ansible_ssh_user: vagrant
     ansible_ssh_private_key_file: "{{ vagrant_project_dir }}/.vagrant/machines/default/virtualbox/private_key"
   sudo: no
+  when: vagrant_action == "up"
 
 - name: Gather facts
   setup:
+  when: vagrant_action == "up"
+
+- name: Tear down host
+  local_action:
+    module: shell vagrant destroy -f
+    chdir: "{{ vagrant_project_dir }}"
+  sudo: no
+  register: vagrant_action_out
+  when: vagrant_action == "destroy"
+
+- name: Debug vagrant_action_out.stdout_lines
+  local_action:
+    module: debug
+    var: vagrant_action_out.stdout_lines
+  sudo: no
+  tags: debug
+
