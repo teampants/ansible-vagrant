@@ -7,6 +7,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
 
   config.vm.network "private_network", ip: "{{ vagrant_private_network_ip }}"
+  {% if vagrant_hostname is defined %}
+    config.vm.hostname = "{{ vagrant_hostname }}"
+  {% endif %}
 
   config.vm.provider "virtualbox" do |vb|
     vb.name = "{{ inventory_hostname }}"
