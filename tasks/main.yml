@@ -29,8 +29,24 @@
   sudo: no
   when: vagrant_action == "up"
 
+- name: Add host to local /etc/hosts
+  local_action:
+    module: lineinfile
+    dest: /etc/hosts
+    line: "{{ vagrant_private_network_ip }} {{ inventory_hostname }}"
+  sudo: yes
+  when: vagrant_add_to_local_etc_hosts and vagrant_action == "up"
+
 - name: Gather facts
   setup:
+  when: vagrant_action == "up"
+
+- name: Add vagrant hosts in configured groups to instance's /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ hostvars[item]['vagrant_private_network_ip'] }} {{ item }}"
+  with_flattened: "{{ vagrant_etc_hosts_groups }}"
+  sudo: yes
   when: vagrant_action == "up"
 
 - name: Tear down host
@@ -47,4 +63,3 @@
     var: vagrant_action_out.stdout_lines
   sudo: no
   tags: debug
-
