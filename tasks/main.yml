@@ -24,18 +24,10 @@
 - name: Set SSH key to use when connecting to the new host
   local_action:
     module: set_fact
-    ansible_ssh_user: vagrant
-    ansible_ssh_private_key_file: "{{ vagrant_project_dir }}/.vagrant/machines/default/virtualbox/private_key"
+    ansible_ssh_user: "{{ vagrant_ansible_ssh_user }}"
+    ansible_ssh_private_key_file: "{{ vagrant_ansible_ssh_private_key_file }}"
   sudo: no
   when: vagrant_action == "up"
-
-- name: Add host to local /etc/hosts
-  local_action:
-    module: lineinfile
-    dest: /etc/hosts
-    line: "{{ vagrant_private_network_ip }} {{ inventory_hostname }}"
-  sudo: yes
-  when: vagrant_add_to_local_etc_hosts and vagrant_action == "up"
 
 - name: Gather facts
   setup:

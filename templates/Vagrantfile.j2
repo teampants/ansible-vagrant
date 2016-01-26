@@ -4,7 +4,7 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "{{ vagrant_vm_box }}"
 
   config.vm.network "private_network", ip: "{{ vagrant_private_network_ip }}"
   {% if vagrant_hostname is defined %}

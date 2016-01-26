@@ -1,9 +1,11 @@
 ---
+vagrant_ansible_ssh_user: vagrant
+vagrant_ansible_ssh_private_key_file: "{{ vagrant_project_dir }}/.vagrant/machines/default/virtualbox/private_key"
 vagrant_action: "up"
 vagrant_etc_hosts_groups: []
-vagrant_add_to_local_etc_hosts: false
 vagrant_hostname: "{{ inventory_hostname }}"
 vagrant_private_network_ip: "{{ inventory_hostname }}"
 vagrant_project_dir: "{{ vagrant_projects_root_dir }}/{{ inventory_hostname }}"
 vagrant_projects_root_dir: "{{ playbook_dir }}/vagrant"
+vagrant_vm_box: "ubuntu/trusty64"
 vagrant_vm_memory_mb: 1024
