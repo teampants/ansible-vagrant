@@ -24,8 +24,42 @@
 - name: Set SSH key to use when connecting to the new host
   local_action:
     module: set_fact
+    vagrant_original_ansible_ssh_user: "{{ ansible_ssh_user }}"
     ansible_ssh_user: "{{ vagrant_ansible_ssh_user }}"
     ansible_ssh_private_key_file: "{{ vagrant_ansible_ssh_private_key_file }}"
+  sudo: no
+  when: vagrant_action == "up"
+
+- name: Add user
+  user:
+    name: "{{ vagrant_original_ansible_ssh_user }}"
+    shell: /bin/bash
+    groups: sudo
+    state: present
+    generate_ssh_key: no
+  sudo: yes
+  when: vagrant_action == "up"
+
+- name: Add public key to new user's authorized keys
+  authorized_key:
+    user: "{{ vagrant_original_ansible_ssh_user }}"
+    key: "{{ lookup('file', vagrant_ssh_public_key_file) }}"
+  sudo: yes
+  when: vagrant_action == "up"
+
+- name: enable passwordless sudo
+  lineinfile:
+    dest: "/etc/sudoers"
+    line: "{{ vagrant_original_ansible_ssh_user }} ALL=(ALL) NOPASSWD: ALL"
+    state: "present"
+  sudo: yes
+  when: vagrant_action == "up"
+
+- name: Set SSH key back
+  local_action:
+    module: set_fact
+    ansible_ssh_user: "{{ vagrant_original_ansible_ssh_user }}"
+    ansible_ssh_private_key_file:
   sudo: no
   when: vagrant_action == "up"
 
