@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  author: Eric Cassady (github@noteric.com)
+  description: Basic template-based launch and control of Vagrant VMs
+  license: Apache 2.0
+  min_ansible_version: 1.9.1
+
+dependencies: []
