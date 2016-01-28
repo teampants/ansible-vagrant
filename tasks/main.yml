@@ -25,9 +25,14 @@
   local_action:
     module: set_fact
     vagrant_original_ansible_ssh_user: "{{ ansible_ssh_user }}"
+    ansible_ssh_host: "{{ vagrant_private_network_ip }}"
     ansible_ssh_user: "{{ vagrant_ansible_ssh_user }}"
     ansible_ssh_private_key_file: "{{ vagrant_ansible_ssh_private_key_file }}"
   sudo: no
+  when: vagrant_action == "up"
+
+- name: Gather facts
+  setup:
   when: vagrant_action == "up"
 
 - name: Add user
@@ -61,10 +66,6 @@
     ansible_ssh_user: "{{ vagrant_original_ansible_ssh_user }}"
     ansible_ssh_private_key_file:
   sudo: no
-  when: vagrant_action == "up"
-
-- name: Gather facts
-  setup:
   when: vagrant_action == "up"
 
 - name: Add vagrant hosts in configured groups to instance's /etc/hosts
