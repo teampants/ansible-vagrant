@@ -1,91 +1,95 @@
 ---
 - name: Ensure vagrant project directory exists
-  local_action:
-    module: file
+  become: false
+  delegate_to: localhost
+  file:
     path: "{{ vagrant_project_dir }}"
     state: directory
-  sudo: no
 
 - name: Process Vagrantfile template
-  local_action:
-    module: template
+  become: false
+  delegate_to: localhost
+  template:
     src: Vagrantfile.j2
     dest: "{{ vagrant_project_dir }}/Vagrantfile"
-  sudo: no
 
 - name: Ensure vagrant vm is up
-  local_action:
-    module: shell vagrant up
+  delegate_to: localhost
+  shell: vagrant up
+  args:
     chdir: "{{ vagrant_project_dir }}"
-  sudo: no
+  become: false
   register: vagrant_action_out
   when: vagrant_action == "up"
 
 - name: Set SSH key to use when connecting to the new host
-  local_action:
-    module: set_fact
-    vagrant_original_ansible_ssh_user: "{{ ansible_ssh_user }}"
-    ansible_ssh_user: "{{ vagrant_ansible_ssh_user }}"
+  become: false
+  set_fact:
+    vagrant_original_ansible_ssh_user: "{{ ansible_user | default(lookup('env', 'USER'), true) }}"
+    ansible_ssh_host: "{{ vagrant_private_network_ip }}"
     ansible_ssh_private_key_file: "{{ vagrant_ansible_ssh_private_key_file }}"
-  sudo: no
+  when: vagrant_action == "up"
+
+- name: Gather facts
+  remote_user: "{{ vagrant_ansible_ssh_user }}"
+  setup:
   when: vagrant_action == "up"
 
 - name: Add user
+  become: true
+  remote_user: "{{ vagrant_ansible_ssh_user }}"
   user:
     name: "{{ vagrant_original_ansible_ssh_user }}"
     shell: /bin/bash
     groups: sudo
     state: present
     generate_ssh_key: no
-  sudo: yes
   when: vagrant_action == "up"
 
 - name: Add public key to new user's authorized keys
+  become: true
+  remote_user: "{{ vagrant_ansible_ssh_user }}"
   authorized_key:
     user: "{{ vagrant_original_ansible_ssh_user }}"
     key: "{{ lookup('file', vagrant_ssh_public_key_file) }}"
-  sudo: yes
   when: vagrant_action == "up"
 
 - name: enable passwordless sudo
+  become: true
+  remote_user: "{{ vagrant_ansible_ssh_user }}"
   lineinfile:
     dest: "/etc/sudoers"
     line: "{{ vagrant_original_ansible_ssh_user }} ALL=(ALL) NOPASSWD: ALL"
     state: "present"
-  sudo: yes
   when: vagrant_action == "up"
 
 - name: Set SSH key back
-  local_action:
-    module: set_fact
+  become: false
+  set_fact:
     ansible_ssh_user: "{{ vagrant_original_ansible_ssh_user }}"
     ansible_ssh_private_key_file:
-  sudo: no
-  when: vagrant_action == "up"
-
-- name: Gather facts
-  setup:
   when: vagrant_action == "up"
 
 - name: Add vagrant hosts in configured groups to instance's /etc/hosts
+  become: true
   lineinfile:
     dest: /etc/hosts
     line: "{{ hostvars[item]['vagrant_private_network_ip'] }} {{ item }}"
   with_flattened: "{{ vagrant_etc_hosts_groups }}"
-  sudo: yes
   when: vagrant_action == "up"
 
 - name: Tear down host
-  local_action:
-    module: shell vagrant destroy -f
+  become: false
+  delegate_to: localhost
+  shell: vagrant destroy -f
+  args:
     chdir: "{{ vagrant_project_dir }}"
-  sudo: no
   register: vagrant_action_out
   when: vagrant_action == "destroy"
 
 - name: Debug vagrant_action_out.stdout_lines
-  local_action:
-    module: debug
+  become: false
+  delegate_to: localhost
+  debug:
     var: vagrant_action_out.stdout_lines
-  sudo: no
   tags: debug
